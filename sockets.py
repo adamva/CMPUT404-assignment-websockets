@@ -14,14 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import flask
-from flask import Flask, request
+import flask, logging, gevent, os, json, time
+from flask import Flask, request, has_request_context, redirect, send_from_directory, url_for
 from flask_sockets import Sockets
-import gevent
 from gevent import queue
-import time
-import json
-import os
+
+from flask.logging import default_handler
+# This logging code is modified from a flask documenation by Pallets, retrieved on 2023-03-05 from flask.palletsprojects.com
+# Documentation here:
+# https://flask.palletsprojects.com/en/2.2.x/logging/
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        if has_request_context():
+            record.url = request.url
+            record.remote_addr = request.remote_addr
+        else:
+            record.url = None
+            record.remote_addr = None
+
+        return super().format(record)
+
+formatter = RequestFormatter(
+    '%(asctime)s %(levelname)s %(url)s - %(funcName)s - %(message)s', "%Y-%m-%dT%H:%M:%S"
+)
+default_handler.setFormatter(formatter)
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -69,8 +85,9 @@ myWorld.add_set_listener( set_listener )
         
 @app.route('/')
 def hello():
-    '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+    '''Redirect to /static/index.html '''
+    app.logger.info("Got '/' redirecting to /static/index.html")
+    return redirect(url_for('static', filename='index.html'))
 
 def read_ws(ws,client):
     '''A greenlet function that reads from the websocket and updates the world'''
