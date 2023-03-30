@@ -19,7 +19,7 @@ import gevent
 import os
 import json
 import time
-from flask import Flask, request, has_request_context, redirect, send_from_directory, url_for
+from flask import Flask, request, has_request_context, redirect, Response, send_from_directory, url_for
 from flask_sockets import Sockets
 from gevent import queue
 
@@ -154,24 +154,60 @@ def flask_post_json():
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
-    '''update the entities via this interface'''
-    return None
+    '''Update world entities'''
+    response_status = 400
+    response_error = {'error': {'code': 1, 'message': 'Could not perform update'}}
+    request_post_json = {}
+    # Parse incoming request JSON
+    try:
+        request_post_json = flask_post_json()
+    except Exception as e:
+        app.logger.error(f'Failed to parse request JSON - [{e}]')
+        response_error['error']['code'] = response_status
+        response_error['error']['message'] = str(e)
+        return Response(response=json.dumps(response_error), status=response_status, mimetype='application/json')
+    
+    # Update world with request JSON
+    did_update = False
+    if request.method == 'PUT':
+        myWorld.set(entity, request_post_json)
+        response_status = 200
+        did_update = True
+    elif request.method == 'POST':
+        for key in request_post_json:
+            myWorld.update(entity, key, request_post_json[key])
+        response_status = 200
+        did_update = True
+    else:
+        app.logger.error(f'Unknown method [{request.method}]')
+        response_status=405
+
+    if did_update:
+        new_entity = myWorld.get(entity)
+        return Response(response=json.dumps(new_entity), status=response_status, mimetype='application/json')
+    else:
+        return Response(status=response_status)
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
-    '''you should probably return the world here'''
-    return None
+    '''Return the current world'''
+    rsp = Response(response=json.dumps(myWorld.world()), status=200, mimetype='application/json')
+    return rsp
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
-    '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
-
+    '''Return the entity from the world'''
+    entity_data = myWorld.get(entity)
+    if entity_data == {}:
+        app.logger.warning(f'Unknown entity [{entity}], returning empty JSON')
+    return entity_data
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
-    '''Clear the world out!'''
-    return None
+    '''Clear the world'''
+    myWorld.clear()
+    rsp = Response(response=json.dumps(myWorld.world()), status=200, mimetype='application/json')
+    return rsp
 
 
 

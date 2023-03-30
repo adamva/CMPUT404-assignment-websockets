@@ -63,6 +63,7 @@ Contributors
 
 References
 ============
+- Ahmed A. 2023. CMPUT404-assignment-ajax - server.py. Retrieved from https://github.com/adamva/CMPUT404-assignment-ajax/blob/master/server.py
 - Hindle A. 2013. WebSockets Example - chat.py. Retrieved from https://github.com/uofa-cmput404/cmput404-slides/blob/master/examples/WebSocketsExamples/chat.py
 - Hindle A. 2013. WebSockets Example - exercise.py. Retrieved from https://github.com/uofa-cmput404/cmput404-slides/blob/master/examples/WebSocketsExamples/exercise.py
 
