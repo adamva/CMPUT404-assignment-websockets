@@ -21,11 +21,65 @@
         limitations under the License.
     "/>
     <script src="json2.js"></script>
+    <style>
+        html, body {
+            background-color: black;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        canvas {
+            border: 5pt solid white;
+        }
+
+        .drawer {
+            border-bottom: 2pt solid white; color: white;
+            margin-bottom: 5pt
+        }
+        
+        .canvasCustomization {
+            display: flex;
+            align-items: center;
+        }
+
+        .brushOptions {
+            display: flex;
+        }
+
+        .brushOption {
+            display: flex;
+            align-items: center;
+        }
+
+        .brushOption label, .brushOption input {
+            margin-right: 10pt;
+        }
+    </style>
   </head> 
-  <body bgcolor="white" height="100%" width="100%"> 
+  <body>
+    <div class="drawer">
+        <h3 id="drawerId">Hello!</h3>
+        <h4>Customize your brush!</h4>
+        <div class="canvasCustomization">
+            <div class="brushOptions">
+                <div class="brushOption">
+                    <label for="brushColor">COLOR: </label>
+                    <input type="color" id="brushColor" value="#ff8040"> </input>
+                </div>
+                <div class="brushOption">
+                    <label for="brushRadius">SIZE: </label>
+                    <input type="range" min="2" max="10" value="5" id="brushRadius">
+                </div>
+            </div>
+            <div class="worldOptions">
+                <button onclick="clearWorld()">Clear the canvas</button>
+            </div>
+        </div>
+    </div>
     <div id="debug"></div>
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
-
     <script>
       // Fix me
 var canvas = document.getElementById('c');
@@ -37,6 +91,30 @@ var wscounter = 0;
 var socket;
 var uuid = self.crypto.randomUUID();
 var fps = 1000/30; // fps = 1000/0.25;
+
+var brushColor = 'red';
+var brushRadius = 2;
+
+/*
+This code is modified from an answer to a question forum by Paolo Bergantino, on 2009-07-06, retrieved 2023-03-05 from stackoverflow.com
+Question Forum
+https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
+*/
+var brushColorSelectElement = document.getElementById("brushColor");
+function onChangeBrushColor() {
+    brushColor = brushColorSelectElement.value;
+    console.log(`You changed the brushColor to ${brushColor}`);
+}
+brushColorSelectElement.onchange = onChangeBrushColor;
+onChangeBrushColor();
+
+var brushRadiusSelectElement = document.getElementById("brushRadius");
+function onChangeBrushRadius() {
+    brushRadius = brushRadiusSelectElement.value;
+    console.log(`You changed the brushRadius to ${brushRadius}`);
+}
+brushRadiusSelectElement.onchange = onChangeBrushRadius;
+onChangeBrushRadius();
 
 function debug(str) {
     var debugDiv = document.getElementById('debug');
@@ -240,16 +318,15 @@ mouse = (function() {
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':brushColor, 'radius':brushRadius});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':brushColor, 'radius':brushRadius});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':brushColor, 'radius':brushRadius});
 });
 
 
@@ -258,7 +335,6 @@ function update() {
     // console.debug(world);
     drawFrame();
 }
-
 
 function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
