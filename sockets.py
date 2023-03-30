@@ -75,6 +75,9 @@ class World:
     def add_set_listener(self, listener):
         self.listeners.append( listener )
 
+    def add_listenter(self, listener):
+        self.listeners.append(listener)
+
     def update(self, entity, key, value):
         entry = self.space.get(entity,dict())
         entry[key] = value
@@ -88,7 +91,7 @@ class World:
     def update_listeners(self, entity):
         '''update the set listeners'''
         for listener in self.listeners:
-            listener(entity, self.get(entity))
+            set_listener(entity, self.get(entity))
 
     def clear(self):
         self.space = dict()
@@ -104,7 +107,14 @@ myWorld = World()
 def set_listener( entity, data ):
     ''' do something with the update ! '''
 
-myWorld.add_set_listener( set_listener )
+def update_world(data):
+    print('yyy1')
+    print(data)
+    # print(data.decode('utf8')) # doing anything with the data seems to lock up the program...
+    print('yyy2')
+
+
+# myWorld.add_set_listener( set_listener )
         
 @app.route('/')
 def hello():
@@ -118,6 +128,8 @@ def read_ws(ws,client):
         while True:
             msg = ws.receive()
             print("WS RECV: %s" % msg)
+            update_world(msg)
+            ws.send(msg)
             if (msg is not None):
                 '''Do nothing'''
                 #packet = json.loads(msg)
@@ -132,7 +144,7 @@ def subscribe_socket(ws):
     '''Fufill the websocket URL of /subscribe, every update notify the
        websocket and read updates from the websocket '''
     client = Client()
-    myWorld.add_set_listener(client)
+    myWorld.add_listenter(client)
     g = gevent.spawn( read_ws, ws, client )    
     print("Subscribing")
     try:

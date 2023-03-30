@@ -35,6 +35,7 @@ var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
 var wscounter = 0;
 var socket;
+var uuid = self.crypto.randomUUID();
 
 function debug(str) {
     var debugDiv = document.getElementById('debug');
@@ -124,12 +125,18 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
-    console.debug('addEntity');
-    ws.send('xxxx')
+    let dataToSend = {
+        entity: entity,
+        data: data
+    };
+    console.debug('addEntity', dataToSend);
+    socket.send(JSON.stringify(dataToSend));
 }
+
 var counter = 0;
 function addEntityWithoutName(data) {
-    var name = "X"+(counter++)%100;
+    // var name = "X"+(counter++)%100;
+    let name = uuid+'-'+(counter++)%1000;
     addEntity(name,data);
 }
 
@@ -257,7 +264,7 @@ function wsSetup() {
         //XXX: TODO What are you going to do here?
         debug('Connection made!')
         console.log("[open] Connection established");
-        socket.send("Client: I am sending this");
+        socket.send("Client: I am connected");
     };
 
     socket.onerror = function(msg) {
@@ -276,15 +283,16 @@ function wsSetup() {
     socket.onclose = function(event) {
         if (event.wasClean) {
             console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            debug('Connection closed');
         } else {
             console.error('[close] Connection died');
+            debug('Connection died');
         }
     };
 
-    return socket;
 }
 
-ws = wsSetup();
+wsSetup();
 
 
 
