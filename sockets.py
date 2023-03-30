@@ -60,9 +60,6 @@ class World:
     def add_set_listener(self, listener):
         self.listeners.append( listener )
 
-    def add_listenter(self, listener):
-        self.listeners.append(listener)
-
     def update(self, entity, key, value):
         entry = self.space.get(entity,dict())
         entry[key] = value
@@ -123,14 +120,16 @@ def subscribe_socket(ws):
     clients.append(client)
     g = gevent.spawn( read_ws, ws, client )    
     print("Subscribing")
+    ws.send(json.dumps(myWorld.world()))
     try:
         while True:
             # block here
             msg = client.get()
             recv_json = json.loads(msg)
-            myWorld.set(recv_json['entity'], recv_json['data'])
+            entity = recv_json['entity']
+            myWorld.set(entity, recv_json['data'])
             # print("Responding with myWorld.world()")
-            ws.send(json.dumps(myWorld.world()))
+            ws.send(json.dumps(myWorld.get(entity)))
     except Exception as e:# WebSocketError as e:
         print("WS Error %s" % e)
     finally:
