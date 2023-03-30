@@ -49,8 +49,6 @@ app = create_app()
 sockets = Sockets(app)
 app.debug = True
 
-clients = list()
-
 def send_all(msg):
     for client in clients:
         client.put( msg )
@@ -134,7 +132,7 @@ def subscribe_socket(ws):
     '''Fufill the websocket URL of /subscribe, every update notify the
        websocket and read updates from the websocket '''
     client = Client()
-    clients.append(client)
+    myWorld.add_set_listener(client)
     g = gevent.spawn( read_ws, ws, client )    
     print("Subscribing")
     try:

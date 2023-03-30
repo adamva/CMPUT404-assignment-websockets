@@ -40,7 +40,6 @@ function debug(str) {
     var debugDiv = document.getElementById('debug');
     debugDiv.innerHTML = "" + str;
 }
-debug("Test");
 
 world = {};
 
@@ -125,6 +124,8 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    console.debug('addEntity');
+    ws.send('xxxx')
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -254,21 +255,36 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        debug('Connection made!')
+        console.log("[open] Connection established");
+        socket.send("Client: I am sending this");
     };
+
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
     };
     socket.onmessage = function(msg) {  
         try {
+            console.log(`[message] Data received from server: ${msg.data}`);
             debug("WebSocket Recv:" + msg.data);
             //XXX: TODO What are you going to do here?            
         } catch (e) {
-            alert("socket on message: " + e);
+            console.log("socket on message: " + e);
         }
     }; 
+
+    socket.onclose = function(event) {
+        if (event.wasClean) {
+            console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+        } else {
+            console.error('[close] Connection died');
+        }
+    };
+
+    return socket;
 }
 
-wsSetup();
+ws = wsSetup();
 
 
 
