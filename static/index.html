@@ -36,6 +36,7 @@ var H = canvas.height = window.innerHeight-50;
 var wscounter = 0;
 var socket;
 var uuid = self.crypto.randomUUID();
+var fps = 1000/30; // fps = 1000/0.25;
 
 function debug(str) {
     var debugDiv = document.getElementById('debug');
@@ -123,13 +124,13 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    drawNextFrame(); // (but should we?)
+    // drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
     let dataToSend = {
         entity: entity,
         data: data
     };
-    console.debug('addEntity', dataToSend);
+    // console.debug('addEntity', dataToSend);
     socket.send(JSON.stringify(dataToSend));
 }
 
@@ -253,6 +254,8 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 
 
 function update() {
+    // console.debug('doing update');
+    // console.debug(world);
     drawFrame();
 }
 
@@ -270,8 +273,11 @@ function wsSetup() {
     };
     socket.onmessage = function(msg) {  
         try {
-            debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            debug("WebSocket receiving update...");
+            //XXX: TODO What are you going to do here?
+            const world_update = msg.data;
+            world = { ...world, ...world_update};
+            drawNextFrame();
         } catch (e) {
             console.log("socket on message: " + e);
         }
@@ -293,7 +299,7 @@ wsSetup();
 
 
 // 30 frames per second
-setInterval( update, 1000/30.0);
+setInterval( update, fps);
 
 
     </script>
