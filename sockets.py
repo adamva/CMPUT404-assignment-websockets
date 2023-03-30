@@ -105,7 +105,11 @@ def read_ws(ws,client):
             # print("WS RECV: %s" % msg)
             if (msg is not None):
                 packet = json.loads(msg)
-                send_all_json( packet )
+                entity = packet['entity']
+                data = packet['data']
+                myWorld.set(entity, data)
+                data_to_send = { entity: myWorld.get(entity) }
+                send_all_json( data_to_send )
             else:
                 break
     except:
@@ -125,11 +129,9 @@ def subscribe_socket(ws):
         while True:
             # block here
             msg = client.get()
-            recv_json = json.loads(msg)
-            entity = recv_json['entity']
-            myWorld.set(entity, recv_json['data'])
             # print("Responding with myWorld.world()")
-            ws.send(json.dumps(myWorld.get(entity)))
+            # print('Responding with ' + msg)
+            ws.send(msg)
     except Exception as e:# WebSocketError as e:
         print("WS Error %s" % e)
     finally:
