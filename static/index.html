@@ -262,9 +262,7 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
-        debug('Connection made!')
-        console.log("[open] Connection established");
-        socket.send("Client: I am connected");
+        debug('Connection made!');
     };
 
     socket.onerror = function(msg) {
@@ -272,7 +270,6 @@ function wsSetup() {
     };
     socket.onmessage = function(msg) {  
         try {
-            console.log(`[message] Data received from server: ${msg.data}`);
             debug("WebSocket Recv:" + msg.data);
             //XXX: TODO What are you going to do here?            
         } catch (e) {
@@ -282,10 +279,8 @@ function wsSetup() {
 
     socket.onclose = function(event) {
         if (event.wasClean) {
-            console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-            debug('Connection closed');
+            debug(`Connection closed cleanly, code=${event.code} reason=${event.reason}`);
         } else {
-            console.error('[close] Connection died');
             debug('Connection died');
         }
     };

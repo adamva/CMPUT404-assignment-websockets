@@ -14,31 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import flask, logging, gevent, os, json, time
+import flask
+import gevent
+import os
+import json
+import time
 from flask import Flask, request, has_request_context, redirect, send_from_directory, url_for
 from flask_sockets import Sockets
 from gevent import queue
 
-from flask.logging import default_handler
-# This logging code is modified from a flask documenation by Pallets, retrieved on 2023-03-05 from flask.palletsprojects.com
-# Documentation here:
-# https://flask.palletsprojects.com/en/2.2.x/logging/
-class RequestFormatter(logging.Formatter):
-    def format(self, record):
-        if has_request_context():
-            record.url = request.url
-            record.remote_addr = request.remote_addr
-        else:
-            record.url = None
-            record.remote_addr = None
-
-        return super().format(record)
-
-formatter = RequestFormatter(
-    '%(asctime)s %(levelname)s %(url)s - %(funcName)s - %(message)s', "%Y-%m-%dT%H:%M:%S"
-)
-default_handler.setFormatter(formatter)
-
+clients = list() # This might be what myWorld.add_listener is for
 gevents = list()
 
 def create_app():
@@ -91,7 +76,7 @@ class World:
     def update_listeners(self, entity):
         '''update the set listeners'''
         for listener in self.listeners:
-            set_listener(entity, self.get(entity))
+            listener(entity, self.get(entity))
 
     def clear(self):
         self.space = dict()
@@ -107,14 +92,7 @@ myWorld = World()
 def set_listener( entity, data ):
     ''' do something with the update ! '''
 
-def update_world(data):
-    print('yyy1')
-    print(data)
-    # print(data.decode('utf8')) # doing anything with the data seems to lock up the program...
-    print('yyy2')
-
-
-# myWorld.add_set_listener( set_listener )
+myWorld.add_set_listener( set_listener )
         
 @app.route('/')
 def hello():
@@ -128,12 +106,9 @@ def read_ws(ws,client):
         while True:
             msg = ws.receive()
             print("WS RECV: %s" % msg)
-            update_world(msg)
-            ws.send(msg)
             if (msg is not None):
-                '''Do nothing'''
-                #packet = json.loads(msg)
-                #send_all_json( packet )
+                packet = json.loads(msg)
+                send_all_json( packet )
             else:
                 break
     except:
@@ -144,7 +119,8 @@ def subscribe_socket(ws):
     '''Fufill the websocket URL of /subscribe, every update notify the
        websocket and read updates from the websocket '''
     client = Client()
-    myWorld.add_listenter(client)
+    # myWorld.add_listenter(client)
+    clients.append(client)
     g = gevent.spawn( read_ws, ws, client )    
     print("Subscribing")
     try:
