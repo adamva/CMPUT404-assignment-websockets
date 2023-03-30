@@ -59,3 +59,9 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+* Adam Ahmed
+
+References
+============
+- Hindle A. 2013. WebSockets Example - exercise.py. Retrieved from https://github.com/uofa-cmput404/cmput404-slides/blob/master/examples/WebSocketsExamples/exercise.py
+
