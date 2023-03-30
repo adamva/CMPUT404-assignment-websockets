@@ -201,10 +201,8 @@ function addEntity(entity, data) {
     world[entity] = data;
     // drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
-    let dataToSend = {
-        entity: entity,
-        data: data
-    };
+    let dataToSend = {};
+    dataToSend[entity] = data;
     // console.debug('addEntity', dataToSend);
     socket.send(JSON.stringify(dataToSend));
 }
@@ -349,8 +347,8 @@ function wsSetup() {
             debug("WebSocket receiving update...");
             //XXX: TODO What are you going to do here?
             const world_update = JSON.parse(msg.data);
-            // console.log('got update')
-            // console.debug(world_update)
+            console.log('got update')
+            console.debug(world_update)
             world = { ...world, ...world_update};
             drawNextFrame();
             drawFrame();
