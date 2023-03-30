@@ -348,7 +348,7 @@ function wsSetup() {
             //XXX: TODO What are you going to do here?
             const world_update = JSON.parse(msg.data);
             // console.log('got update')
-            console.debug(world_update)
+            // console.debug(world_update)
             world = { ...world, ...world_update};
             drawNextFrame();
             drawFrame();
